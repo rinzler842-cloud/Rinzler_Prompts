@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Therapy Prompts</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 40px;
+            background: #121212;
+            color: #e0e0e0;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        #prompt {
+            font-size: 20px;
+            margin: 30px auto;
+            max-width: 700px;
+            padding: 25px;
+            background: #1e1e1e;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+            min-height: 80px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 15px;
+            cursor: pointer;
+            border-radius: 6px;
+            border: none;
+        }
+
+        .primary { background-color: #3a7bfd; color: white; }
+        .success { background-color: #2e7d32; color: white; }
+        .danger { background-color: #aa2e25; color: white; }
+
+        #moodSelector {
+            margin-top: 20px;
+        }
+
+        .mood-option {
+            margin: 8px;
+            display: inline-block;
+        }
+
+        input[type="radio"] {
+            margin-right: 6px;
+            transform: scale(1.2);
+        }
+
+        #dashboard {
+            margin-top: 40px;
+            text-align: left;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .completed-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        /* Mood background colors */
+        .mood-1 { background-color: rgba(170, 46, 37, 0.25); }
+        .mood-2 { background-color: rgba(90, 110, 130, 0.25); }
+        .mood-3 { background-color: rgba(46, 125, 50, 0.25); }
+
+        /* Mood counter text colors */
+        .counter-1 { color: rgb(170, 46, 37); }
+        .counter-2 { color: rgb(90, 110, 130); }
+        .counter-3 { color: rgb(46, 125, 50); }
+
+    </style>
+</head>
+<body>
+
+<h1>🖤 Therapy Prompts</h1>
+
+<div id="prompt">Click "Draw Prompt" to begin.</div>
+
+<button class="primary" onclick="drawPrompt()">Draw Prompt</button>
+
+<div id="moodSelector" style="display:none;">
+    <div>
+        <label class="mood-option">
+            <input type="radio" name="mood" value="1">
+            Crashing out
+        </label>
+
+        <label class="mood-option">
+            <input type="radio" name="mood" value="2">
+            Average day
+        </label>
+
+        <label class="mood-option">
+            <input type="radio" name="mood" value="3">
+            Like a thousand bucks
+        </label>
+    </div>
+
+    <button class="success" onclick="confirmComplete()">Mark As Completed</button>
+</div>
+
+<button class="danger" onclick="resetAll()">Reset All</button>
+
+<div id="dashboard">
+    <h3>📊 Stats Dashboard</h3>
+    <div id="statsNumbers"></div>
+    <h4>Completed Prompts:</h4>
+    <div id="completedList"></div>
+</div>
+
+<script>
+
+// ==== PASTE YOUR MASTER LIST HERE ====
+const originalPrompts = [
+"What are five things you can do this week to improve your mental health?",
+"List your 15 best qualities.",
+"List 10 things you are grateful for.",
+"Do you believe in miracles? Why or why not?",
+"What do you think about the following statement: \"depression is anger turned inward.\"",
+"List 5 things that trigger your anxiety. Why do you think they do that?",
+"Write your best friend a thank you letter. How have they earned the title of \"best friend\"?",
+"Describe your greatest achievement and why it means so much to you.",
+"Regardless of how terrible my day is, these ten things can always make me feel better:",
+"List 5 things that scare you and why.",
+"List 5 negative things you think about yourself and why they are not true.",
+"Write an open letter to your anxiety. What would you say to it?",
+"If you had to give your depression a human name, what name would you give it and why?",
+"Describe your relationship with money. Do you think it helps or hurts your anxiety?",
+"List 5 things about your living space that you can change to promote your mental health.",
+"What would you like most people to know about you and why?",
+"What was your most embarrassing moment, and why?",
+"If you could change something about yourself, what would it be and why?",
+"Write about your happiest childhood memory.",
+"Where do you feel the most safe? Why?",
+"Explain to your 12-year-old self how talking about your depression helps.",
+"What would your life be like if you didn't have depression or anxiety?",
+"What is a quality that you admire most about others? In what way do you see this quality in yourself?",
+"Name 5 things you can do for self-care that you are not already doing.",
+"What is your worst habit? How would your life improve if you changed it?",
+"What are your 5 best talents?",
+"What is unique about you? Do you keep it hidden or let others see it? Why?",
+"What is your favorite song lyric? Why?",
+"If you could achieve anything in your life, what would it be?",
+"Describe your ideal friend.",
+"Talk about physical pain and what effect, if any, it has on your mood.",
+"What negative messages did you receive growing up that still affect you to this day?",
+"What is your relationship with food? Is it healthy or harmful?",
+"When you look in the mirror, what is the most beautiful thing you see and why?",
+"Talk about the benefits of journaling and why you would benefit from adding it to your daily routine.",
+"What are 3 benefits of stretching?",
+"Make a list of 10 quotes that inspire you.",
+"Write a letter to your favorite teacher and describe how they affected your life.",
+"Write a letter to someone you dislike and forgive them.",
+"List 5 ways therapy would be beneficial to you.",
+"List 5 things that give you anxiety and explain why they bother you.",
+"Write a letter to your parents and tell them 5 things they don't know about you (but don't send it).",
+"What is something difficult that you were able to overcome?",
+"Write a letter to your 10-year-old self. How would you encourage them?",
+"Make a schedule for your perfect day. Assume you have 500 dollars to spend.",
+"How would you describe yourself to a stranger?",
+"What does spirituality mean to you, and what does it look like in your life?",
+"If you could volunteer anywhere, where would you volunteer and why?",
+"List 5 benefits of helping others.",
+"Give three examples from your own life when you went out of your way to help others.",
+"Give three examples from your own life when someone went out of their way to help you.",
+"Who was your favorite teacher? Why?",
+"Who was your favorite boss? Why?",
+"Write a letter to your future self.",
+"Make 2 columns. In the 1st column, write down 5 things you fear and in the 2nd column, explain why those fears are valid.",
+"Talk about a time you mistook a feeling for a fact. How did it affect you?",
+"If you knew you would not fail, list 5 things you would do.",
+"If your depression was an animal, what animal would it be and why?",
+"What are your thoughts about the following statement: \"anxiety stems from our desire to control things that we cannot.\"",
+"If your anxiety was a fictional character, what character would it be and why?",
+"If you could have the same dream every night, what would you dream about and why?",
+"Who is your favorite fictional character and why?",
+"What advice would you give to your child about how to manage their anxiety?",
+"How would your life be better if you did not suffer from depression or anxiety?",
+"List 5 ways anxiety is actually beneficial to people.",
+"List 15 things you value about yourself, other people, or work/school.",
+"List 5 reasons why it's important to protect your emotional well-being.",
+"Write a letter to your doctor in which you describe your symptoms and ask for assistance.",
+"Write a letter to your therapist in which you describe 5 things about yourself that you want them to know.",
+"Do you prefer dogs or cats? Why?",
+"If you could study any subject in college, what would it be and why?",
+"If you could develop one new skill overnight, what would it be and why?",
+"Write a letter to a childhood bully and forgive them for what they did to you (but don't send it).",
+"Write a letter to your teenage self telling them 10 things you wish they knew.",
+"Develop a bucket list of 5 things you'd like to accomplish over the next year.",
+"What is the biggest life lesson you've learned to date? How did you learn it and how has it affected your life?",
+"Which emotion is most difficult for you to experience? Why?",
+"Discuss 5 things you did well this week.",
+"What do you wish your friends would say to you when you're feeling down?",
+"What would it feel like to forgive yourself?",
+"What is your favorite hobby and why?",
+"List 5 ways exercise could help you with your depression or anxiety.",
+"Describe your bedtime routine. Is it helpful or harmful for your sleep?",
+"What was your greatest failure and what did you learn from it?",
+"Write about a difficult time in your life that you have overcome.",
+"Describe how you want your life to look in 5 years.",
+"What are the three things that most scare you and why?",
+"What was the most beautiful compliment you ever received?",
+"What 15 things make you smile?",
+"What are your 5 favorite things to do when it's raining?",
+"What hobbies or interests did you have as a child that you still have now?",
+"What advice would you give to your best friend about how to manage depression?",
+"What's the first thing you think about every morning upon awakening, and what's the last thing that crosses your mind before you fall asleep?",
+"Write a letter to the person who causes you the most anxiety. Tell them why they cause you anxiety, but don't send it to them.",
+"What does your dream life look like?",
+"Imagine a miracle happened and you woke up one day with a new life. What would be different? What would stay the same? What are you unsure about?",
+"Write down what you’re most anxious about right now.",
+"Are your worries realistic? If yes, why?",
+"What is going well in your life right now?",
+"How can you release negative energy in your life?",
+"What would your perfect day look like?",
+"What are your top three accomplishments?",
+"If you could change anything about yourself, what would it be and why?",
+"Name ten ways you can start taking better care of yourself.",
+"If today was your last day, how would you spend it?",
+"When was the last time you did something for yourself? How did it feel?",
+"What is one lesson you’ve learned from anxiety?",
+"Write down five moments when you were the happiest.",
+"What could you do right now that would make you happier?",
+"Are you living up to your full potential? Why or why not?",
+"On a scale of 1 (poor) to 10 (healthy), rate your mental health. What factors are contributing to it?",
+"What was your biggest learning moment this week?",
+"What was your greatest failure this week?",
+"You feel the most confident when…",
+"What are your greatest fears? Are they realistic? Why?",
+"No matter how awful your day is, name five things that will make you feel better.",
+"Write down how anxiety has shaped you into who you are today.",
+"How would you want friends and family to remember you?",
+"What legacy would you want to leave behind?",
+"What do you wish most people knew about you?",
+"Name five people you look up to the most. What qualities do they have that you admire?",
+"What can you work on to become the person you’ve always wanted to be?",
+"List three things you can practice to calm your anxiety.",
+"List three affirmations you can say to yourself. Why are these important?",
+"What have you never done before but would like to try?",
+"What are five things you want to remind yourself every day?",
+"How do you cope with stress?",
+"How are you allowing anxiety to control your life?",
+"When anxiety pops up, how do you deal with it?",
+"What would you tell your future self? Why?",
+"Make a list of the compliments that you’ve received from others.",
+"Write a love letter to yourself.",
+"What do you look forward to every day and why?",
+"What values are important to you?",
+"Instead of trying to fix or improve things, what are three things about yourself or your life that you can decide to accept exactly as they are? How does this shift your stress level?",
+"Not everyone has an easy time being positive, and it can be especially hard if you’re already not feeling in a great place mentally. So, rather than listing things you're thankful for, jot down some things you don't have—and are glad you don't have or have to deal with. Was this an easier way for you to think? Does this help you see things differently?",
+"If you had the chance to adjust three things about the upcoming day to make it great, what would they be? What are the reasons for your choices? What steps can you take now to make them a reality tomorrow?",
+"For every bad thing happening in the world right now, people are out there working to make things better. Now challenge yourself to find at least one positive effort, breakthrough, or solution happening around something that upsets you.",
+"We all feel stuck sometimes. What is one aspect of your life that feels like you’re running in place? Is there something that you’re waiting to happen to change things? What’s one small action you can take—no matter how insignificant—that could open a path forward?",
+"What’s something you do that makes you feel bad about yourself (procrastination, overthinking, isolation, etc.)? Now think about what the complete opposite action is. What would happen if you tried it for a day?",
+"When was a time when you felt completely recharged and refreshed? What were you doing? Who were you with (or were you alone)? Are there little things about that time that you can bring into your life more often?",
+"Write down five cool things you've already done that made you feel happy or peaceful—or, in other words, things you’ve already knocked off your bucket list. What was it about these things that made you feel good, and how can you work that into your day-to-day life?",
+"We can usually think of things we want to change in our lives pretty easily, and sometimes they feel too big to take on. It’s important to remind ourselves that we can do difficult things. What’s something you used to struggle with that you don’t struggle with anymore? Have you rewarded yourself for your success? If not, what can you do to celebrate?",
+"Think of a time when someone’s kindness, courage, or optimism gave you hope. Now flip it: What if you were already someone else’s sign of hope without realizing it? What do you think you did to inspire that person?"
+];
+
+let currentPrompt = null;
+
+function loadData() {
+    let remaining = localStorage.getItem("remainingPrompts");
+    let completed = localStorage.getItem("completedPrompts");
+
+    if (!remaining || !completed) {
+        localStorage.setItem("remainingPrompts", JSON.stringify(originalPrompts));
+        localStorage.setItem("completedPrompts", JSON.stringify([]));
+        return {
+            remaining: [...originalPrompts],
+            completed: []
+        };
+    }
+
+    return {
+        remaining: JSON.parse(remaining),
+        completed: JSON.parse(completed)
+    };
+}
+
+function saveData(remaining, completed) {
+    localStorage.setItem("remainingPrompts", JSON.stringify(remaining));
+    localStorage.setItem("completedPrompts", JSON.stringify(completed));
+}
+
+function drawPrompt() {
+    let data = loadData();
+    if (data.remaining.length === 0) {
+        document.getElementById("prompt").innerText = "You've completed all prompts! 🎉";
+        return;
+    }
+
+    let index = Math.floor(Math.random() * data.remaining.length);
+    currentPrompt = data.remaining[index];
+    document.getElementById("prompt").innerText = currentPrompt;
+
+    document.getElementById("moodSelector").style.display = "block";
+}
+
+function confirmComplete() {
+    if (!currentPrompt) return;
+
+    let selectedMood = document.querySelector('input[name="mood"]:checked');
+    if (!selectedMood) {
+        alert("Please select a mood.");
+        return;
+    }
+
+    let moodValue = parseInt(selectedMood.value);
+    let data = loadData();
+
+    data.remaining = data.remaining.filter(p => p !== currentPrompt);
+    data.completed.push({
+        text: currentPrompt,
+        mood: moodValue
+    });
+
+    saveData(data.remaining, data.completed);
+
+    currentPrompt = null;
+    document.getElementById("prompt").innerText = "Prompt marked as completed.";
+    document.getElementById("moodSelector").style.display = "none";
+    document.querySelectorAll('input[name="mood"]').forEach(r => r.checked = false);
+
+    updateDashboard();
+}
+
+function updateDashboard() {
+    let data = loadData();
+    let moodCounts = [0,0,0];
+
+    data.completed.forEach(entry => {
+        moodCounts[entry.mood - 1]++;
+    });
+
+    document.getElementById("statsNumbers").innerHTML = `
+        Total: ${originalPrompts.length} <br>
+        Remaining: ${data.remaining.length} <br>
+        Completed: ${data.completed.length} <br><br>
+        Mood Breakdown:<br>
+        <span class="counter-1">Crashing out: ${moodCounts[0]}</span><br>
+        <span class="counter-2">Average day: ${moodCounts[1]}</span><br>
+        <span class="counter-3">Like a thousand bucks: ${moodCounts[2]}</span>
+    `;
+
+    let list = document.getElementById("completedList");
+    list.innerHTML = "";
+
+    data.completed.forEach(entry => {
+        let div = document.createElement("div");
+        div.className = "completed-item mood-" + entry.mood;
+        div.innerText = entry.text;
+        list.appendChild(div);
+    });
+}
+
+function resetAll() {
+    if (!confirm("Reset everything?")) return;
+
+    localStorage.setItem("remainingPrompts", JSON.stringify(originalPrompts));
+    localStorage.setItem("completedPrompts", JSON.stringify([]));
+    currentPrompt = null;
+    document.getElementById("prompt").innerText = "All prompts reset.";
+    document.getElementById("moodSelector").style.display = "none";
+
+    updateDashboard();
+}
+
+updateDashboard();
+
+</script>
+
+</body>
+</html>
